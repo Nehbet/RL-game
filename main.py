@@ -11,7 +11,7 @@ import constants
 
 	e26  -  https://youtu.be/iRgdx4EC_f8?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=2200
 
-
+	https://youtu.be/qI_B0WtxT3M?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=2320
 	
 
 	Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
@@ -78,6 +78,7 @@ class struc_Assets:
 		self.S_SCROLL_02 = self.scroll.get_image('c', 2, 16, 16, (32, 32))
 		self.S_SCROLL_03 = self.scroll.get_image('d', 6, 16, 16, (32, 32))
 		self.S_FLESH_01 = self.flesh.get_image('b', 4, 16, 16, (32, 32))
+
 
 
 
@@ -183,7 +184,7 @@ class obj_Actor:
 		if is_visible:  # if visible, check to see if animation has > 1 image
 			if len(self.animation) == 1:
 				# if no, just blit the image
-				SURFACE_MAIN.blit(self.animation[0], (self.x*constants.CELL_WIDTH, 
+				SURFACE_MAP.blit(self.animation[0], (self.x*constants.CELL_WIDTH, 
 					self.y*constants.CELL_HEIGHT))
 			# does this object have multiple sprites?
 			elif len(self.animation) > 1:
@@ -201,7 +202,7 @@ class obj_Actor:
 					else:
 						self.sprite_image += 1  # advance to next sprite
 				#  draw the result
-				SURFACE_MAIN.blit(self.animation[self.sprite_image], 
+				SURFACE_MAP.blit(self.animation[self.sprite_image], 
 					(self.x*constants.CELL_WIDTH, self.y*constants.CELL_HEIGHT))
 
 	def distance_to(self, other):
@@ -342,6 +343,64 @@ class obj_Room:
 		objects_intersect = (self.x1 <= other.x2 and self.x2 >= other.x1 and
 							 self.y1 <= other.y2 and self.y2 >= other.y1)		
 		return objects_intersect
+
+class obj_Camera:
+	def __init__(self):
+		self.width = constants.CAMERA_WIDTH
+		self.height = constants.CAMERA_HEIGHT
+		self.x, self.y = (0, 0)
+
+	@property
+	def rectangle(self):
+		pos_rect = pygame.Rect((0, 0), (constants.CAMERA_WIDTH, 
+										constants.CAMERA_HEIGHT))
+		pos_rect.center = (self.x, self.y)
+
+		return pos_rect
+
+	@property
+	def map_address(self):
+		map_x = self.x / constants.CELL_WIDTH
+		map_y = self.y / constants.CELL_HEIGHT
+
+		return (map_x, map_y)
+
+	def update(self):
+		target_x = PLAYER.x * constants.CELL_WIDTH + (constants.CELL_WIDTH / 2)
+		target_y = PLAYER.y * constants.CELL_HEIGHT + (constants.CELL_HEIGHT / 2)
+
+		distance_x, distance_y = self.map_dist((target_x, target_y))
+
+		self.x += int(distance_x)# * .1)
+		self.y += int(distance_y)# * .1)   ## ca sa urmareasca cu incetinitorul
+
+	def map_dist(self, coords):
+
+		tar_x, tar_y = coords
+		
+		#convert window coords to distance from camera
+
+		#distance from cam -> map coord
+
+	def map_dist(self, coords):
+		new_x, new_y = coords
+
+		dist_x = new_x - self.x
+		dist_y = new_y - self.y
+
+		return (dist_x, dist_y)
+
+	def cam_dist(self, coords):
+		win_x, win_y = coords
+
+		dist_x = win_x - (self.width / 2)
+		dist_y = win_y - (self.height / 2)
+
+		return (dist_x, dist_y)
+
+
+
+
 
 
 
@@ -603,8 +662,6 @@ class com_Equipment:
 
 
 
-
-
 #		       d8888 8888888 
 #		      d88888   888   
 #		     d88P888   888   
@@ -752,19 +809,14 @@ def map_create():
 	return (new_map, list_of_rooms)
 
 def map_place_objects(room_list):
-
 	for room in room_list:
-
 		x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
 		y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
-
 		gen_enemy((x, y))
 
 		x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
 		y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
-
 		gen_item((x, y))
-
 
 def map_create_room(new_map, new_room):
 	for x in range(new_room.x1, new_room.x2):
@@ -953,10 +1005,11 @@ def draw_game():
 		5) Draw the messages console
 		6) Update the display'''
 
-	global SURFACE_MAIN
-
 	#TODO clear the surface
 	SURFACE_MAIN.fill(constants.COLOR_DEFAULT_BG)
+	SURFACE_MAP.fill(constants.COLOR_BLACK)
+
+	CAMERA.update()
 
 	#TODO draw the map
 	draw_map(GAME.current_map)
@@ -964,6 +1017,8 @@ def draw_game():
 	#draw all objects
 	for obj in GAME.current_objects:
 		obj.draw()
+
+	SURFACE_MAIN.blit(SURFACE_MAP, (0, 0), CAMERA.rectangle)
 
 	draw_debug()
 	draw_messages()
@@ -989,22 +1044,22 @@ def draw_map(map_to_draw):
 
 				if map_to_draw[x][y].block_path == True:
 					#draw wall
-					SURFACE_MAIN.blit(ASSETS.S_WALL,
+					SURFACE_MAP.blit(ASSETS.S_WALL,
 						(x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT))
 				else:
 					#draw floor
-					SURFACE_MAIN.blit(ASSETS.S_FLOOR,
+					SURFACE_MAP.blit(ASSETS.S_FLOOR,
 						(x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT))
 
 			elif map_to_draw[x][y].explored:
 
 				if map_to_draw[x][y].block_path == True:
 					#draw wall
-					SURFACE_MAIN.blit(ASSETS.S_WALLEXPLORED,
+					SURFACE_MAP.blit(ASSETS.S_WALLEXPLORED,
 						(x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT))
 				else:
 					#draw floor
-					SURFACE_MAIN.blit(ASSETS.S_FLOOREXPLORED,
+					SURFACE_MAP.blit(ASSETS.S_FLOOREXPLORED,
 						(x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT))
 
 def draw_debug():
@@ -1039,7 +1094,7 @@ def draw_messages():
 
 	text_height = helper_text_height(constants.FONT_MESSAGE_TEXT)
 
-	start_y = (constants.MAP_HEIGHT * constants.CELL_HEIGHT - (constants.NUM_MESSAGES * \
+	start_y = (constants.CAMERA_HEIGHT - (constants.NUM_MESSAGES * \
 	 text_height)) - 5
 
 	for i, (message, color) in enumerate(to_draw):
@@ -1100,7 +1155,7 @@ def draw_tile_rect(coords, tile_color = None, tile_alpha = None, mark = None):
 			coords = (constants.CELL_WIDTH/2, constants.CELL_HEIGHT/2),
 			text_color = constants.COLOR_BLACK, center = True)
 
-	SURFACE_MAIN.blit(new_surface, (new_x, new_y))
+	SURFACE_MAP.blit(new_surface, (new_x, new_y))
 
 
 
@@ -1304,8 +1359,8 @@ def menu_pause():
 	# intialize to False, pause ends when set to True
 	menu_close = False
 	# window dimentions
-	window_width = constants.MAP_WIDTH * constants.CELL_WIDTH
-	window_height = constants.MAP_HEIGHT * constants.CELL_HEIGHT
+	window_width = constants.CAMERA_WIDTH
+	window_height = constants.CAMERA_HEIGHT
 	# Window Text characteristics
 	menu_text = " PAUSED "
 	menu_font = constants.FONT_DEBUG_MESSAGE
@@ -1345,8 +1400,8 @@ def menu_inventory():
 	menu_width = 300
 	menu_height = 300
 	# Menu Characteristics
-	window_width = constants.MAP_WIDTH * constants.CELL_WIDTH
-	window_height = constants.MAP_HEIGHT * constants.CELL_HEIGHT
+	window_width = constants.CAMERA_WIDTH
+	window_height = constants.CAMERA_HEIGHT
 
 	menu_x = (window_width / 2) - (menu_width / 2)
 	menu_y = (window_height / 2) - (menu_height / 2)
@@ -1426,9 +1481,12 @@ def menu_tile_select(coords_origin = None, max_range = None, radius = None,
 		#get click
 		events_list = pygame.event.get()
 
-		#mouse map sel
-		map_coord_x = mouse_x / constants.CELL_WIDTH
-		map_coord_y = mouse_y / constants.CELL_HEIGHT
+		#mouse map selection
+
+		mapx_pixel, mapy_pixel = CAMERA.map_dist((mouse_x, mouse_y))
+
+		# map_coord_x = mouse_x / constants.CELL_WIDTH
+		# map_coord_y = mouse_y / constants.CELL_HEIGHT
 		
 		valid_tiles = []
 
@@ -1665,6 +1723,7 @@ def gen_snake_cobra(coords):
 
 
 
+
 #		 .d8888b.                                  
 #		d88P  Y88b                                 
 #		888    888                                 
@@ -1715,7 +1774,8 @@ def game_main_loop():
 def game_initialize():
 	'''This function initializez the main window and pygame'''
 
-	global SURFACE_MAIN, GAME, CLOCK, FOV_CALCULATE, PLAYER, ENEMY, ASSETS
+	global SURFACE_MAIN, SURFACE_MAP
+	global GAME, CLOCK, FOV_CALCULATE, PLAYER, ENEMY, ASSETS, CAMERA
 
 	#initialize pygame
 	pygame.init()
@@ -1724,8 +1784,14 @@ def game_initialize():
 
 	libtcod.namegen_parse('data\\namegen\\jice_celtic.cfg')
 
-	SURFACE_MAIN = pygame.display.set_mode((constants.MAP_WIDTH * constants.CELL_WIDTH, 
-		constants.MAP_HEIGHT * constants.CELL_HEIGHT))
+	SURFACE_MAIN = pygame.display.set_mode((constants.CAMERA_WIDTH, 
+											constants.CAMERA_HEIGHT))
+
+	SURFACE_MAP = pygame.Surface((constants.MAP_WIDTH * constants.CELL_WIDTH,
+								  constants.MAP_HEIGHT * constants.CELL_HEIGHT))
+
+
+	CAMERA = obj_Camera()
 
 	ASSETS = struc_Assets()
 
@@ -1801,6 +1867,7 @@ def game_message(game_msg, msg_color = constants.COLOR_GREY):
 		msg_color ((int, int, int), optional) = color of the message'''
 
 	GAME.message_history.append((game_msg, msg_color))
+
 
 
 
