@@ -4,8 +4,8 @@ import pygame
 pygame.init()
 
 #Game sizes
-GAME_WIDTH = 800
-GAME_HEIGHT = 600
+CAMERA_WIDTH = 800
+CAMERA_HEIGHT = 600
 CELL_WIDTH = 32
 CELL_HEIGHT = 32
 
@@ -13,9 +13,9 @@ CELL_HEIGHT = 32
 GAME_FPS = 60
 
 #Map limitations
-MAP_WIDTH = 50
-MAP_HEIGHT = 30
-MAP_MAX_NUM_ROOMS = 10
+MAP_WIDTH = 100
+MAP_HEIGHT = 100
+MAP_MAX_NUM_ROOMS = 25
 
 #Room limitations
 ROOM_MAX_HEIGHT = 7
