@@ -11,7 +11,7 @@ import constants
 
 	e26  -  https://youtu.be/iRgdx4EC_f8?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=2200
 
-	https://youtu.be/qI_B0WtxT3M?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=2320
+
 	
 
 	Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
@@ -229,6 +229,34 @@ class obj_Game:
 	def __init__(self):		
 		self.current_objects = []
 		self.message_history = []
+		self.maps_previous = []
+		self.maps_next = []
+		self.current_map, self.current_rooms = map_create()
+
+	def transition_next(self):
+
+		global FOV_CALCULATE
+
+		FOV_CALCULATE = True
+
+		if len(self.maps_next) == 0:
+
+			self.maps_previous.append((PLAYER.x, PLAYER.y, self.current_map, 
+				self.current_rooms, self.current_objects))
+
+			self.current_objects = [PLAYER]
+
+			self.current_map, self.current_rooms = map_create()
+			map_place_objects(self.current_rooms)
+			
+	def transition_previous(self):
+
+		(PLAYER.x, PLAYER.y, self.current_map, self.current_rooms, 
+			self.current_objects) = self.maps_previous[-1]
+
+
+
+
 
 class obj_Spritesheet:
 	
@@ -374,13 +402,18 @@ class obj_Camera:
 		self.x += int(distance_x)# * .1)
 		self.y += int(distance_y)# * .1)   ## ca sa urmareasca cu incetinitorul
 
-	def map_dist(self, coords):
+	def win_to_map(self, coords):
 
 		tar_x, tar_y = coords
-		
+
 		#convert window coords to distance from camera
+		cam_d_x, cam_d_y = self.cam_dist((tar_x, tar_y))
 
 		#distance from cam -> map coord
+		map_p_x = self.x + cam_d_x
+		map_p_y = self.y + cam_d_y
+
+		return ((map_p_x, map_p_y))
 
 	def map_dist(self, coords):
 		new_x, new_y = coords
@@ -794,9 +827,7 @@ def map_create():
 			map_create_room(new_map, new_room)
 			current_center = new_room.center
 
-			if len(list_of_rooms) == 0:
-				gen_player(current_center)
-			else:
+			if len(list_of_rooms) != 0:
 				previous_center = list_of_rooms[-1].center
 
 				#fig tunnels
@@ -810,6 +841,9 @@ def map_create():
 
 def map_place_objects(room_list):
 	for room in room_list:
+
+		if room == room_list[0]: PLAYER.x, PLAYER.y = room.center
+
 		x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
 		y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
 		gen_enemy((x, y))
@@ -888,7 +922,7 @@ def map_check_for_creature(x, y, exclude_object = None):
 				if target:
 					return target
 
-def mpa_check_for_wall(x, y):
+def map_check_for_wall(x, y):
 	incoming_map[x][y].block_path
 
 def map_make_fov(incoming_map):
@@ -1033,8 +1067,25 @@ def draw_map(map_to_draw):
 		map_to_draw (array): the map to draw in the background.  Under most
 			circumstances, should be the GAME.current_map object.'''
 
-	for x in range(0, constants.MAP_WIDTH):
-		for y in range(0, constants.MAP_HEIGHT):
+
+	cam_x, cam_y = CAMERA.map_address
+
+	display_map_w = constants.CAMERA_WIDTH / constants.CELL_WIDTH
+	display_map_h = constants.CAMERA_HEIGHT / constants.CELL_HEIGHT
+
+	render_w_min = cam_x - (display_map_w / 2)
+	render_h_min = cam_y - (display_map_h / 2)
+	render_w_max = cam_x + (display_map_w / 2)
+	render_h_max = cam_y + (display_map_h / 2)
+
+	if render_w_min < 0: render_w_min = 0
+	if render_h_min < 0: render_h_min = 0
+
+	if render_w_max > constants.MAP_WIDTH: render_w_max = constants.MAP_WIDTH
+	if render_h_max > constants.MAP_HEIGHT: render_h_max = constants.MAP_HEIGHT
+
+	for x in range(render_w_min, render_w_max):
+		for y in range(render_h_min, render_h_max):
 
 			is_visible = libtcod.map_is_in_fov(FOV_MAP, x, y)
 
@@ -1294,10 +1345,10 @@ def cast_fireball(caster, T_damage_radius_range):
 
 
 
-	player_location = (PLAYER.x, PLAYER.y)
+	caster_location = (PLAYER.x, PLAYER.y)
 
 	#get target tile
-	point_selected = menu_tile_select(coords_origin = player_location,
+	point_selected = menu_tile_select(coords_origin = caster_location,
 		max_range = max_r, penetrate_walls = False, pierce_creature = False,
 		radius = local_radius)
 	
@@ -1483,10 +1534,10 @@ def menu_tile_select(coords_origin = None, max_range = None, radius = None,
 
 		#mouse map selection
 
-		mapx_pixel, mapy_pixel = CAMERA.map_dist((mouse_x, mouse_y))
+		mapx_pixel, mapy_pixel = CAMERA.win_to_map((mouse_x, mouse_y))
 
-		# map_coord_x = mouse_x / constants.CELL_WIDTH
-		# map_coord_y = mouse_y / constants.CELL_HEIGHT
+		map_coord_x = mapx_pixel / constants.CELL_WIDTH
+		map_coord_y = mapy_pixel / constants.CELL_HEIGHT
 		
 		valid_tiles = []
 
@@ -1525,7 +1576,17 @@ def menu_tile_select(coords_origin = None, max_range = None, radius = None,
 					
 
 		#draw game first
-		draw_game()
+		SURFACE_MAIN.fill(constants.COLOR_DEFAULT_BG)
+		SURFACE_MAP.fill(constants.COLOR_BLACK)
+
+		CAMERA.update()
+
+		#TODO draw the map
+		draw_map(GAME.current_map)
+
+		#draw all objects
+		for obj in GAME.current_objects:
+			obj.draw()
 
 		#draw rectangle at mouse
 		for (tile_x, tile_y) in valid_tiles:
@@ -1541,6 +1602,11 @@ def menu_tile_select(coords_origin = None, max_range = None, radius = None,
 			for (tile_x, tile_y) in area_effect:
 				draw_tile_rect(coords = (tile_x, tile_y), 
 					tile_color = constants.COLOR_RED, tile_alpha = 150)
+
+		SURFACE_MAIN.blit(SURFACE_MAP, (0, 0), CAMERA.rectangle)
+
+		draw_debug()
+		draw_messages()
 
 
 		#update the display
@@ -1775,7 +1841,7 @@ def game_initialize():
 	'''This function initializez the main window and pygame'''
 
 	global SURFACE_MAIN, SURFACE_MAP
-	global GAME, CLOCK, FOV_CALCULATE, PLAYER, ENEMY, ASSETS, CAMERA
+	global CLOCK, FOV_CALCULATE, PLAYER, ENEMY, ASSETS, CAMERA
 
 	#initialize pygame
 	pygame.init()
@@ -1790,20 +1856,15 @@ def game_initialize():
 	SURFACE_MAP = pygame.Surface((constants.MAP_WIDTH * constants.CELL_WIDTH,
 								  constants.MAP_HEIGHT * constants.CELL_HEIGHT))
 
-
 	CAMERA = obj_Camera()
 
 	ASSETS = struc_Assets()
 
-	GAME = obj_Game()
-
-	GAME.current_map, GAME.current_rooms = map_create()
-
-	map_place_objects(GAME.current_rooms)
-
 	CLOCK = pygame.time.Clock()
 
 	FOV_CALCULATE = True
+
+	game_new()
 
 def game_handle_keys():
 	'''Handles player input'''
@@ -1853,7 +1914,11 @@ def game_handle_keys():
 				menu_inventory()
 
 			if event.key == pygame.K_l:
-				cast_confusion()
+				GAME.transition_next()
+
+			if event.key == pygame.K_o:
+				GAME.transition_previous()
+	
 
 
 	return "no-action"
@@ -1868,7 +1933,14 @@ def game_message(game_msg, msg_color = constants.COLOR_GREY):
 
 	GAME.message_history.append((game_msg, msg_color))
 
+def game_new():
+	global GAME
+	#GAME tracks the games progress
+	GAME = obj_Game()
 
+	gen_player((0, 0))
+
+	map_place_objects(GAME.current_rooms)
 
 
 #	Y88b   Y88b        									        d88P   d88P 
