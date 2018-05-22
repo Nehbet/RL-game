@@ -12,7 +12,7 @@ import constants
 	e26  -  https://youtu.be/iRgdx4EC_f8?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=2200
 
 
-	
+	https://youtu.be/T598AtHgX6k?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=1839
 
 	Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
 
