@@ -7,18 +7,20 @@ import math
 import constants
 
 ###############################
+
 '''
+	https://youtu.be/wuaFrVQqOj0?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=716
 
-	e26  -  https://youtu.be/iRgdx4EC_f8?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=2200
 
+	## PROCEDURAL GENERATION MAPS
+	https://www.reddit.com/r/roguelikedev/comments/6df0aw/my_implementation_of_a_bunch_of_dungeon_algorithms/
+	
 
-	https://youtu.be/T598AtHgX6k?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=1839
+	## PROBLEME CU JOCUL
+	-> Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
+	-> cabd e fatal dmg, calculeaza calumea dmg-ul (si la overheal)
+	-> cand vrea cineva sa se mute pe un tile care e deja ocupat, face dmg'''
 
-	Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
-
-	cabd e fatal dmg, calculeaza calumea dmg-ul (si la overheal)
-
-	cand vrea cineva sa se mute pe un tile care e deja ocupat, face dmg'''
 ###############################
 
 #		 .d8888b.  888                             
@@ -234,29 +236,42 @@ class obj_Game:
 		self.current_map, self.current_rooms = map_create()
 
 	def transition_next(self):
-
 		global FOV_CALCULATE
 
 		FOV_CALCULATE = True
 
+		self.maps_previous.append((PLAYER.x, PLAYER.y, self.current_map, 
+								   self.current_rooms, self.current_objects))
+
 		if len(self.maps_next) == 0:
-
-			self.maps_previous.append((PLAYER.x, PLAYER.y, self.current_map, 
-				self.current_rooms, self.current_objects))
-
 			self.current_objects = [PLAYER]
 
 			self.current_map, self.current_rooms = map_create()
 			map_place_objects(self.current_rooms)
+		else:
+			(PLAYER.x, PLAYER.y, self.current_map, self.current_rooms, 
+						self.current_objects) = self.maps_next[-1]
+
+			map_make_fov(self.current_map)
+			FOV_CALCULATE = True
+
+			del self.maps_next[-1]
+
 			
 	def transition_previous(self):
+		global FOV_CALCULATE
 
-		(PLAYER.x, PLAYER.y, self.current_map, self.current_rooms, 
-			self.current_objects) = self.maps_previous[-1]
+		if len(self.maps_previous) != 0:
+			self.maps_next.append((PLAYER.x, PLAYER.y, self.current_map, 
+								   self.current_rooms, self.current_objects))
 
+			(PLAYER.x, PLAYER.y, self.current_map, self.current_rooms, 
+						self.current_objects) = self.maps_previous[-1]
 
+			map_make_fov(self.current_map)
+			FOV_CALCULATE = True
 
-
+			del self.maps_previous[-1]
 
 class obj_Spritesheet:
 	
@@ -1818,7 +1833,7 @@ def game_main_loop():
 		map_calculate_fov()
 
 		if player_action == "QUIT":
-			game_quit = True
+			game_exit()
 
 		elif player_action != "no-action":
 			for obj in GAME.current_objects:
@@ -1833,9 +1848,6 @@ def game_main_loop():
 		#tick the clock
 		CLOCK.tick(constants.GAME_FPS)
 
-	#quit the game
-	pygame.quit()
-	exit()
 
 def game_initialize():
 	'''This function initializez the main window and pygame'''
@@ -1941,6 +1953,16 @@ def game_new():
 	gen_player((0, 0))
 
 	map_place_objects(GAME.current_rooms)
+
+def game_exit():
+	#quit the game
+	pygame.quit()
+	exit()
+
+
+
+
+
 
 
 #	Y88b   Y88b        									        d88P   d88P 
