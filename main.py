@@ -4,6 +4,7 @@ import pygame
 import math
 import pickle
 import gzip
+import random
 
 #game files
 import constants
@@ -14,9 +15,24 @@ import constants
 	https://youtu.be/wuaFrVQqOj0?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=716
 
 
+
+
+
+
+
+
+
+
 	## PROCEDURAL GENERATION MAPS
 	https://www.reddit.com/r/roguelikedev/comments/6df0aw/my_implementation_of_a_bunch_of_dungeon_algorithms/
 	
+	## MUSIC ##
+	https://www.jukedeck.com/make/tracks/browse
+	https://www.bfxr.net/		 #sound effects
+
+	## ASCII GENERATOR ##
+	http://patorjk.com/software/taag/
+	-> Colossal
 
 	## PROBLEME CU JOCUL
 	-> Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
@@ -115,8 +131,17 @@ class struc_Assets:
 
 		}
 
-
-
+		
+		####	## AUDIO ##
+		####	self.music_background = "data/audio/Our First Hours.mp3"
+		####	self.snd_hit_1 = pygame.mixer.Sound("data/audio/hit_1.wav")
+		####	self.snd_hit_2 = pygame.mixer.Sound("data/audio/hit_2.wav")
+		####	self.snd_hit_3 = pygame.mixer.Sound("data/audio/hit_3.wav")
+		####	self.snd_hit_4 = pygame.mixer.Sound("data/audio/hit_4.wav")
+		####	
+		####	self.snd_list_hit = [self.snd_hit_1, self.snd_hit_2, 
+		####						 self.snd_hit_3, self.snd_hit_4]
+		
 
 
 #		 .d88888b.  888       d8b          
@@ -595,6 +620,15 @@ class com_Creature:
 			" damage!", constants.COLOR_WHITE)
 		
 		target.creature.take_damage(damage_delt)
+
+		####	if damage_delt > 0 and self.owner is PLAYER:
+		####		pygame.mixer.Sound.play(RANDOM_ENGINE.choice(ASSETS.snd_list_hit))
+			
+
+
+
+
+
 
 	def take_damage(self, damage):
 
@@ -1437,16 +1471,16 @@ def helper_text_width(font):
 
 def cast_heal(caster, value):
 
-	if caster.creature.current_hp == caster.creature.max_hp:
-		game_message(caster.creature.name_instance + " the " + caster.name_object + \
+	if target.creature.current_hp == target.creature.max_hp:
+		game_message(target.creature.name_instance + " the " + target.name_object + \
 			" is already at full health!")
 		return "canceled"
 
 	else:
-		game_message (caster.creature.name_instance + " the " + caster.name_object + \
+		game_message (target.creature.name_instance + " the " + target.name_object + \
 			" healed for " + str(value) + " health!")
-		caster.creature.heal(value)
-		print(caster.creature.current_hp)
+		target.creature.heal(value)
+		print(target.creature.current_hp)
 
 	return None
 
@@ -1527,6 +1561,74 @@ def cast_confusion(caster, effect_lenght):
 
 
 
+#		888     888   8888888
+#		888     888     888  
+#		888     888     888  
+#		888     888     888  
+#		888     888     888  
+#		888     888     888  
+#		Y88b. .d88P     888  
+#		 "Y88888P"    8888888
+
+
+class ui_Button:
+	def __init__(self, surface, button_text, size, center_coords, 
+		color_box_mouseover = constants.COLOR_RED, 
+		color_box_default = constants.COLOR_GREEN, 
+		color_text_mouseover = constants.COLOR_GREY, 
+		color_text_default = constants.COLOR_GREY):
+
+		self.surface = surface
+		self.button_text = button_text
+		self.size = size
+		self.center_coords = center_coords
+
+		self.c_box_mo = color_box_mouseover
+		self.c_box_de = color_box_default
+		self.c_text_mo = color_text_mouseover
+		self.c_text_de = color_text_default
+		self.c_c_box = color_box_default
+		self.c_c_text = color_text_default
+
+		self.rect = pygame.Rect((0, 0), size)
+		self.rect.center = center_coords
+
+	def update(self, player_input):
+
+		mouse_clicked = False
+
+		local_events, local_mousepos = player_input
+		mouse_x, mouse_y = local_mousepos
+
+		mouse_over = (  mouse_x >= self.rect.left and
+						mouse_x <= self.rect.right and
+						mouse_y >= self.rect.top and
+						mouse_y <= self.rect.bottom		)
+
+		for event in local_events:
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if event.button == 1: mouse_clicked = True
+ 
+		if mouse_over and mouse_clicked:
+			return True
+
+		if mouse_over:
+			self.c_c_box = self.c_box_mo
+			self.c_c_text = self.c_text_mo
+		else:
+			self.c_c_box = self.c_box_de
+			self.c_c_text = self.c_text_de 
+
+
+	def draw(self):
+
+		pygame.draw.rect(self.surface, self.c_c_box, self.rect)
+		draw_text(self.surface, self.button_text, constants.FONT_DEBUG_MESSAGE, 
+			self.center_coords, self.c_c_text, center = True)
+
+
+
+
 #		888b     d888
 #		8888b   d8888
 #		88888b.d88888
@@ -1536,6 +1638,55 @@ def cast_confusion(caster, effect_lenght):
 #		888   "   888 Y8b.     888  888 Y88b 888      X88 
 #		888       888  "Y8888  888  888  "Y88888  88888P' 
 
+
+def menu_main():
+	game_initialize()
+
+	menu_running = True
+
+	title_x = constants.CAMERA_WIDTH / 2
+	title_y = constants.CAMERA_HEIGHT / 2 - 40
+	title_text = "Python - RL"
+
+	#draw menu
+	SURFACE_MAIN.fill(constants.COLOR_BLACK)
+
+	draw_text(SURFACE_MAIN, title_text, constants.FONT_MESSAGE_TEXT, 
+				(title_x, title_y), constants.COLOR_RED, center = True)
+
+	test_button = ui_Button(SURFACE_MAIN, "Start Game", (150, 30), 
+		(title_x, title_y + 40))
+
+	#####	pygame.mixer.music.load(ASSETS.music_background)
+	#####	pygame.mixer.music.play(-1)
+
+	while menu_running:
+
+		list_of_events = pygame.event.get()
+		mouse_position = pygame.mouse.get_pos()
+
+		game_input = (list_of_events, mouse_position)
+		
+		#handle menu events
+		for event in list_of_events:
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				exit()
+
+		#button updates
+		if test_button.update(game_input):
+			#####	pygame.mixer.music.stop()
+			game_start()
+
+		test_button.draw()
+
+		#update surface
+		pygame.display.update()
+
+
+
+
+	# game_main_loop()
 
 def menu_pause():
 	'''This menu pauses the game and displays a simple message'''
@@ -1777,7 +1928,6 @@ def gen_player(coords):
 	GAME.current_objects.append(PLAYER)
 	#return player
 
-
 ## SPECIAL
 def gen_stairs(coords, downwards = True):
 
@@ -1882,7 +2032,6 @@ def gen_armor_shield(coords):
 							  equipment = equipment_com)
 
 	return return_object
-
 
 ## ENEMIES
 def gen_enemy(coords):
@@ -2006,7 +2155,7 @@ def game_initialize():
 	'''This function initializez the main window and pygame'''
 
 	global SURFACE_MAIN, SURFACE_MAP
-	global CLOCK, FOV_CALCULATE, PLAYER, ENEMY, ASSETS, CAMERA
+	global CLOCK, FOV_CALCULATE, PLAYER, ENEMY, ASSETS, CAMERA, RANDOM_ENGINE
 
 	#initialize pygame
 	pygame.init()
@@ -2027,11 +2176,9 @@ def game_initialize():
 
 	CLOCK = pygame.time.Clock()
 
+	####	RANDOM_ENGINE = random.SystemRandom()
+
 	FOV_CALCULATE = True
-	try:
-		game_load()
-	except:
-		game_new()
 
 def game_handle_keys():
 	'''Handles player input'''
@@ -2151,6 +2298,13 @@ def game_load():
 
 	map_make_fov(GAME.current_map)
 
+def game_start():
+	try:
+		game_load()
+	except:
+		game_new()
+
+	game_main_loop()
 
 
 #	Y88b   Y88b        									        d88P   d88P 
@@ -2164,7 +2318,8 @@ def game_load():
      
 ###############################################################################
 
+
+
 ## EXECUTE GAME ##
 if __name__ == '__main__':
-	game_initialize()
-	game_main_loop()
+	menu_main()
