@@ -11,73 +11,76 @@ import constants
 
 ###############################
 	
-		'''https://youtu.be/wuaFrVQqOj0?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=716
-	
-		-> invata sa faci harta  --Cellular Automata--
-		-> minimap cu 10% detaliu, fara FOV, fara monstrii   --trebuie descoperita--
-	
-	
-	
-	
-	
-	
-	
-	
-		## PROCEDURAL GENERATION MAPS
-		https://www.reddit.com/r/roguelikedev/comments/6df0aw/my_implementation_of
-															_a_bunch_of_dungeon_algorithms/
-		
-		## MUSIC ##
-		https://www.jukedeck.com/make/tracks/browse
-		https://www.bfxr.net/		 #sound effects
-	
-		## ASCII GENERATOR ##
-		http://patorjk.com/software/taag/
-		-> Colossal
-	
-		## PROBLEME CU JOCUL
-		-> Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
-		-> cabd e fatal dmg, calculeaza calumea dmg-ul (si la overheal)
-		-> cand vrea cineva sa se mute pe un tile care e deja ocupat, face dmg'''
+'''
+	https://youtu.be/wuaFrVQqOj0?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=716
+
+	-> invata sa faci harta  --Cellular Automata--
+	-> minimap cu 10% detaliu, fara FOV, fara monstrii   --trebuie descoperita--
+
+
+
+
+
+
+
+
+	## PROCEDURAL GENERATION MAPS
+	https://www.reddit.com/r/roguelikedev/comments/6df0aw/my_implementation_of
+														_a_bunch_of_dungeon_algorithms/
+
+	## MUSIC ##
+	https://www.jukedeck.com/make/tracks/browse
+	https://www.bfxr.net/		 #sound effects
+
+	## ASCII GENERATOR ##
+	http://patorjk.com/software/taag/
+	-> Colossal
+
+	## PROBLEME CU JOCUL
+	-> Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
+	-> cabd e fatal dmg, calculeaza calumea dmg-ul (si la overheal)
+	-> cand vrea cineva sa se mute pe un tile care e deja ocupat, face dmg'''
 	
 ###############################
 
-		'''I added the depth system.  I didn't see the video, but looking at the code changes 
-			that you implemented, it was simply a matter of adding a depth property to objects 
-			then sorting the object list based on that property before displaying objects.
-		
-		I added 50% to the main display surface's width and use that space to display the 
-			player's currentHP / maxHP (it no longer shows up in the game messages).
-		
-		I also added an xp and level system and the player's level and currentXP / nextLevelXP 
-			are displayed below his health.  Enemies get strong as you go deeper and their xp 
-			value is based on their attack, defense, and hp.
-		
-		Below that, the current map level is displayed with a mini-map below that.  FPS took a 
-			bit of hit because of the mini-map, but it still stays in the 30-ish range.  It 
-			displays the entire explored map, with areas in FOV being light and the rest 
-			being dark.
-		
-		Below the mini-map, the game messages are displayed.  Instead of a constant that 
-			determines how many messages can be displayed, the max number is based 1/3 of 
-			the display height divided by the text height.  (The message log starts at 2/3 
-			of the way down the screen.)
-		
-		I limited inventory to 10 items.  I may lower that further since items don't despawn. 
-			I haven't added the "win condition" yet (still working towards that video), but I 
-			decided on a rare, really strong enemy that will have a chance to spawn when the 
-			floors are re-populated:  turtles.
-		
-		They will have a bit of defense, good damage and hp... and when you attack them, there 
-			is a small chance your equipped weapon will be destroyed.  And when they attack 
-			you, there's a small chance your equipped shield will be destroyed.  That's the 
-			plan, anyway...
-		
-		EDIT:  Oh!  I forgot to mention that I made a second set of map tile sprites, but 
-			scaled them to 8x8 for the mini-map.  That way I can display 4x as much as the 
-			camera in 1/4 the area.﻿'''
+'''
+	I added the depth system.  I didn't see the video, but looking at the code changes 
+		that you implemented, it was simply a matter of adding a depth property to objects 
+		then sorting the object list based on that property before displaying objects.
+
+	I added 50% to the main display surface's width and use that space to display the 
+		player's currentHP / maxHP (it no longer shows up in the game messages).
+
+	I also added an xp and level system and the player's level and currentXP / nextLevelXP 
+		are displayed below his health.  Enemies get strong as you go deeper and their xp 
+		value is based on their attack, defense, and hp.
+
+	Below that, the current map level is displayed with a mini-map below that.  FPS took a 
+		bit of hit because of the mini-map, but it still stays in the 30-ish range.  It 
+		displays the entire explored map, with areas in FOV being light and the rest 
+		being dark.
+
+	Below the mini-map, the game messages are displayed.  Instead of a constant that 
+		determines how many messages can be displayed, the max number is based 1/3 of 
+		the display height divided by the text height.  (The message log starts at 2/3 
+		of the way down the screen.)
+
+	I limited inventory to 10 items.  I may lower that further since items don't despawn. 
+		I haven't added the "win condition" yet (still working towards that video), but I 
+		decided on a rare, really strong enemy that will have a chance to spawn when the 
+		floors are re-populated:  turtles.
+
+	They will have a bit of defense, good damage and hp... and when you attack them, there 
+		is a small chance your equipped weapon will be destroyed.  And when they attack 
+		you, there's a small chance your equipped shield will be destroyed.  That's the 
+		plan, anyway...
+
+	EDIT:  Oh!  I forgot to mention that I made a second set of map tile sprites, but 
+		scaled them to 8x8 for the mini-map.  That way I can display 4x as much as the 
+		camera in 1/4 the area.'''
 
 ###############################
+
 
 #		 .d8888b.  888                             
 #		d88P  Y88b 888                             
@@ -170,15 +173,15 @@ class struc_Assets:
 		}
 
 		
-		####	## AUDIO ##
-		####	self.music_background = "data/audio/Our First Hours.mp3"
-		####	self.snd_hit_1 = pygame.mixer.Sound("data/audio/hit_1.wav")
-		####	self.snd_hit_2 = pygame.mixer.Sound("data/audio/hit_2.wav")
-		####	self.snd_hit_3 = pygame.mixer.Sound("data/audio/hit_3.wav")
-		####	self.snd_hit_4 = pygame.mixer.Sound("data/audio/hit_4.wav")
-		####	
-		####	self.snd_list_hit = [self.snd_hit_1, self.snd_hit_2, 
-		####						 self.snd_hit_3, self.snd_hit_4]
+		## AUDIO ##
+		self.music_background = "data/audio/Erratic Moustache.mp3"
+		self.snd_hit_1 = pygame.mixer.Sound("data/audio/hit_1.wav")
+		self.snd_hit_2 = pygame.mixer.Sound("data/audio/hit_2.wav")
+		self.snd_hit_3 = pygame.mixer.Sound("data/audio/hit_3.wav")
+		self.snd_hit_4 = pygame.mixer.Sound("data/audio/hit_4.wav")
+		
+		self.snd_list_hit = [self.snd_hit_1, self.snd_hit_2, 
+							 self.snd_hit_3, self.snd_hit_4]
 
 
 
@@ -656,8 +659,8 @@ class com_Creature:
 		
 		target.creature.take_damage(damage_delt)
 
-		####	if damage_delt > 0 and self.owner is PLAYER:
-		####		pygame.mixer.Sound.play(RANDOM_ENGINE.choice(ASSETS.snd_list_hit))
+		if damage_delt > 0 and self.owner is PLAYER:
+			pygame.mixer.Sound.play(RANDOM_ENGINE.choice(ASSETS.snd_list_hit))
 			
 
 
@@ -1694,8 +1697,8 @@ def menu_main():
 	test_button = ui_Button(SURFACE_MAIN, "Start Game", (150, 30), 
 		(title_x, title_y + 40))
 
-	#####	pygame.mixer.music.load(ASSETS.music_background)
-	#####	pygame.mixer.music.play(-1)
+	pygame.mixer.music.load(ASSETS.music_background)
+	pygame.mixer.music.play(-1)
 
 	while menu_running:
 
@@ -1712,7 +1715,7 @@ def menu_main():
 
 		#button updates
 		if test_button.update(game_input):
-			#####	pygame.mixer.music.stop()
+			pygame.mixer.music.stop()
 			game_start()
 
 		test_button.draw()
@@ -2087,7 +2090,7 @@ def gen_snake_anaconda(coords):
 
 	base_attack = libtcod.random_get_int(0, 1, 2)
 
-	max_health = libtcod.random_get_int(0, 5, 10)
+	max_health = libtcod.random_get_int(0, 200, 250)#5, 10)
 
 	creature_name = libtcod.namegen_generate("Celtic female")
 
@@ -2214,7 +2217,7 @@ def game_initialize():
 
 	CLOCK = pygame.time.Clock()
 
-	####	RANDOM_ENGINE = random.SystemRandom()
+	RANDOM_ENGINE = random.SystemRandom()
 
 	FOV_CALCULATE = True
 
