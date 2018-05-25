@@ -10,34 +10,72 @@ import random
 import constants
 
 ###############################
-
-'''
-	https://youtu.be/wuaFrVQqOj0?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=716
-
-
-
-
-
-
-
-
-
-
-	## PROCEDURAL GENERATION MAPS
-	https://www.reddit.com/r/roguelikedev/comments/6df0aw/my_implementation_of_a_bunch_of_dungeon_algorithms/
 	
-	## MUSIC ##
-	https://www.jukedeck.com/make/tracks/browse
-	https://www.bfxr.net/		 #sound effects
+		'''https://youtu.be/wuaFrVQqOj0?list=PLKUel_nHsTQ1yX7tQxR_SQRdcOFyXfNAb&t=716
+	
+		-> invata sa faci harta  --Cellular Automata--
+		-> minimap cu 10% detaliu, fara FOV, fara monstrii   --trebuie descoperita--
+	
+	
+	
+	
+	
+	
+	
+	
+		## PROCEDURAL GENERATION MAPS
+		https://www.reddit.com/r/roguelikedev/comments/6df0aw/my_implementation_of
+															_a_bunch_of_dungeon_algorithms/
+		
+		## MUSIC ##
+		https://www.jukedeck.com/make/tracks/browse
+		https://www.bfxr.net/		 #sound effects
+	
+		## ASCII GENERATOR ##
+		http://patorjk.com/software/taag/
+		-> Colossal
+	
+		## PROBLEME CU JOCUL
+		-> Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
+		-> cabd e fatal dmg, calculeaza calumea dmg-ul (si la overheal)
+		-> cand vrea cineva sa se mute pe un tile care e deja ocupat, face dmg'''
+	
+###############################
 
-	## ASCII GENERATOR ##
-	http://patorjk.com/software/taag/
-	-> Colossal
-
-	## PROBLEME CU JOCUL
-	-> Nu e X ul pe target 'marimea fontului' ?!?!?! Nu stiu ce are...
-	-> cabd e fatal dmg, calculeaza calumea dmg-ul (si la overheal)
-	-> cand vrea cineva sa se mute pe un tile care e deja ocupat, face dmg'''
+		'''I added the depth system.  I didn't see the video, but looking at the code changes 
+			that you implemented, it was simply a matter of adding a depth property to objects 
+			then sorting the object list based on that property before displaying objects.
+		
+		I added 50% to the main display surface's width and use that space to display the 
+			player's currentHP / maxHP (it no longer shows up in the game messages).
+		
+		I also added an xp and level system and the player's level and currentXP / nextLevelXP 
+			are displayed below his health.  Enemies get strong as you go deeper and their xp 
+			value is based on their attack, defense, and hp.
+		
+		Below that, the current map level is displayed with a mini-map below that.  FPS took a 
+			bit of hit because of the mini-map, but it still stays in the 30-ish range.  It 
+			displays the entire explored map, with areas in FOV being light and the rest 
+			being dark.
+		
+		Below the mini-map, the game messages are displayed.  Instead of a constant that 
+			determines how many messages can be displayed, the max number is based 1/3 of 
+			the display height divided by the text height.  (The message log starts at 2/3 
+			of the way down the screen.)
+		
+		I limited inventory to 10 items.  I may lower that further since items don't despawn. 
+			I haven't added the "win condition" yet (still working towards that video), but I 
+			decided on a rare, really strong enemy that will have a chance to spawn when the 
+			floors are re-populated:  turtles.
+		
+		They will have a bit of defense, good damage and hp... and when you attack them, there 
+			is a small chance your equipped weapon will be destroyed.  And when they attack 
+			you, there's a small chance your equipped shield will be destroyed.  That's the 
+			plan, anyway...
+		
+		EDIT:  Oh!  I forgot to mention that I made a second set of map tile sprites, but 
+			scaled them to 8x8 for the mini-map.  That way I can display 4x as much as the 
+			camera in 1/4 the area.﻿'''
 
 ###############################
 
@@ -141,7 +179,7 @@ class struc_Assets:
 		####	
 		####	self.snd_list_hit = [self.snd_hit_1, self.snd_hit_2, 
 		####						 self.snd_hit_3, self.snd_hit_4]
-		
+
 
 
 #		 .d88888b.  888       d8b          
@@ -549,9 +587,6 @@ class obj_Camera:
 
 
 
-
-
-
 #		 .d8888b. 					    Components 
 #		d88P  Y88b
 #		888    888
@@ -832,6 +867,7 @@ class com_Stairs:
 
 
 
+
 #		       d8888 8888888 
 #		      d88888   888   
 #		     d88P888   888   
@@ -922,6 +958,7 @@ def death_mouse(mouse):
 	mouse.animation_key = "S_FLESH_02"
 	mouse.creature = None
 	mouse.ai = None
+
 
 
 
@@ -1043,7 +1080,7 @@ def map_create_tunnels(coords1, coords2, new_map):
 
 		for x in range(min(x1, x2), max(x1, x2) + 1):
 			new_map[x][y2].block_path = False
-	
+
 def map_check_for_creature(x, y, exclude_object = None):
 
 	'''Check the current map for creatures at specified location.
@@ -1378,17 +1415,17 @@ def draw_tile_rect(coords, tile_color = None, tile_alpha = None, mark = None):
 
 
 
-#		888    888          888                                    
-#		888    888          888                                    
-#		888    888          888                                    
+#		888    888			888
+#		888    888			888
+#		888    888			888
 #		8888888888  .d88b.  888 88888b.   .d88b.  888d888 .d8888b  
 #		888    888 d8P  Y8b 888 888 "88b d8P  Y8b 888P"   88K      
 #		888    888 88888888 888 888  888 88888888 888     "Y8888b. 
 #		888    888 Y8b.     888 888 d88P Y8b.     888          X88 
 #		888    888  "Y8888  888 88888P"   "Y8888  888      88888P' 
-#		                        888                                
-#		                        888                                
-#		                        888                                
+#								888
+#								888
+#								888
 
 
 def helper_text_objects(incoming_text, incoming_color, incoming_bg):
@@ -1456,17 +1493,17 @@ def helper_text_width(font):
 
 
 
-#		888b     d888                   d8b          
-#		8888b   d8888                   Y8P          
-#		88888b.d88888                                
+#		888b     d888					d8b			
+#		8888b   d8888					Y8P			
+#		88888b.d88888								
 #		888Y88888P888  8888b.   .d88b.  888  .d8888b 
 #		888 Y888P 888     "88b d88P"88b 888 d88P"    
 #		888  Y8P  888 .d888888 888  888 888 888      
 #		888   "   888 888  888 Y88b 888 888 Y88b.    
 #		888       888 "Y888888  "Y88888 888  "Y8888P 
-#		                            888              
-#		                       Y8b d88P              
-#		                        "Y88P"               
+#							        888				
+#							   Y8b d88P				
+#							    "Y88P" 				
 
 
 def cast_heal(caster, value):
@@ -2108,9 +2145,10 @@ def gen_mouse(coords):
 
 
 
-#		 .d8888b.                                  
-#		d88P  Y88b                                 
-#		888    888                                 
+
+#		 .d8888b. 								
+#		d88P  Y88b								
+#		888    888								
 #		888         8888b.  88888b.d88b.   .d88b.  
 #		888  88888     "88b 888 "888 "88b d8P  Y8b 
 #		888    888 .d888888 888  888  888 88888888 
@@ -2307,19 +2345,26 @@ def game_start():
 	game_main_loop()
 
 
-#	Y88b   Y88b        									        d88P   d88P 
-#	 Y88b   Y88b       									       d88P   d88P  
-#	  Y88b   Y88b      									      d88P   d88P   
-#	   Y88b   Y88b     									     d88P   d88P    
-#	    Y88b   Y88b    									    d88P   d88P     
-#	     Y88b   Y88b   									   d88P   d88P      
-#	      Y88b   Y88b  									  d88P   d88P       
-#	       Y88b   Y88b 									 d88P   d88P        
-     
-###############################################################################
+
+
+#	Y88b   Y88b														d88P   d88P	
+#	 Y88b   Y88b												   d88P   d88P	
+																				
+#	   Y88b   Y88b												 d88P   d88P	
+#		Y88b   Y88b												d88P   d88P		
+																				
+#		  Y88b   Y88b										  d88P   d88P		
+#		   Y88b   Y88b										 d88P   d88P		
+																				
+#			 Y88b   Y88b								   d88P   d88P			
+#			  Y88b   Y88b								  d88P   d88P			
+																				
+###############################################################################	
+
 
 
 
 ## EXECUTE GAME ##
 if __name__ == '__main__':
 	menu_main()
+
